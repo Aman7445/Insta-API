@@ -20,7 +20,7 @@ type Person struct{
 }
 type Posts struct{
 	ID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	UserID string `json:"userid,omitempty" bson:"userid,omitempty"`
+	UserID string `json:"_id,omitempty" bson:"_id,omitempty"`
 	Post string `json:"post,omitempty" bson:"post,omitempty"`
 }
 
@@ -48,6 +48,45 @@ func GetUserEndpoint(response http.ResponseWriter, request *http.Request) {
 	}
 	json.NewEncoder(response).Encode(user)
 }
+func CreatePostEndpoint(response http.ResponseWriter,request *http.Request){
+	response.Header().Set("content-type","application/json")
+	var post Posts
+	_=json.NewDecoder(request.Body).Decode(&post)
+	collection := client.Database("appointy").Collection("post")
+	ctx, _:= context.WithTimeout(context.Background(), 5*time.Second)
+	result, _:=collection.InsertOne(ctx,post);
+	json.NewEncoder(response).Encode(result)
+}
+func GetPostEndpoint(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("content-type", "application/json")
+	params := mux.Vars(request)
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	var post Posts
+	collection := client.Database("appointy").Collection("post")
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	err := collection.FindOne(ctx, Posts{ID: id}).Decode(&post)
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{ "message": "` + err.Error() + `" }`))
+		return
+	}
+	json.NewEncoder(response).Encode(post)
+}
+func GetUserPostEndpoint(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("content-type", "application/json")
+	params := mux.Vars(request)
+	userid  := string(params["userid"])
+	var upost Posts
+	collection := client.Database("appointy").Collection("post")
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	err := collection.FindOne(ctx,Posts{UserID:userid}).Decode(&upost)
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{ "message": "` + err.Error() + `" }`))
+		return
+	}
+	json.NewEncoder(response).Encode(upost)
+}
 
 
 func main(){
@@ -58,5 +97,8 @@ func main(){
 	router :=mux.NewRouter();
 	router.HandleFunc("/users", CreateUserEndpoint).Methods("POST")
 	router.HandleFunc("/users/{id}", GetUserEndpoint).Methods("GET")
+	router.HandleFunc("/posts", CreatePostEndpoint).Methods("POST")
+	router.HandleFunc("/posts/{id}", GetPostEndpoint).Methods("GET")
+	router.HandleFunc("/posts/users/{userid}", GetUserPostEndpoint).Methods("GET")
 	http.ListenAndServe(":8080",router)
 }
