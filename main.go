@@ -2,85 +2,15 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 var client *mongo.Client
-
-// type Users struct{
-// 	ID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-// 	Name string `json:"name,omitempty" bson:"name,omitempty"`
-// 	Email string `json:"email,omitempty" bson:"email,omitempty"`
-// 	Password  string  `json:"password,omitempty" bson:"password,omitempty"`
-// }
-type Posts struct{
-	ID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	UserID string `json:"userid,omitempty" bson:"userid,omitempty"`
-	ImageURL string `json:"imageurl,omitempty" bson:"imageurl,omitempty"`
-	Caption  string `json:"caption,omitempty" bson:"caption,omitempty"`
-	PostedTimeStamp time.Time `json:"postedtimestamp,omitempty" bson:"postedtimestamp,omitempty"`
-}
-
-func CreatePostEndpoint(response http.ResponseWriter,request *http.Request){
-	response.Header().Set("content-type","application/json")
-	var post Posts
-	_=json.NewDecoder(request.Body).Decode(&post)
-	post.PostedTimeStamp= time.Now()
-	collection := client.Database("appointy").Collection("post")
-	ctx, _:= context.WithTimeout(context.Background(), 5*time.Second)
-	result, _:=collection.InsertOne(ctx,post);
-	json.NewEncoder(response).Encode(result)
-}
-func GetPostEndpoint(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("content-type", "application/json")
-	params := mux.Vars(request)
-	id, _ := primitive.ObjectIDFromHex(params["id"])
-	var post Posts
-	collection := client.Database("appointy").Collection("post")
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	err := collection.FindOne(ctx, Posts{ID: id}).Decode(&post)
-	if err != nil {
-		response.WriteHeader(http.StatusInternalServerError)
-		response.Write([]byte(`{ "message": "` + err.Error() + `" }`))
-		return
-	}
-	json.NewEncoder(response).Encode(post)
-}
-
-func GetUserPostsEndpoint(response http.ResponseWriter, request *http.Request){
-    response.Header().Add("content-type", "application/json")
-    params := mux.Vars(request)
-    id, _ := params["id"]
-    var posts []Posts
-    collection := client.Database("appointy").Collection("post")
-    ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-    cursor, err := collection.Find(ctx, Posts{UserID: id})
-    if err != nil {
-        response.WriteHeader(http.StatusInternalServerError)
-        response.Write([]byte(`{"message": "` + err.Error() + `"}`))
-        return
-    }
-    defer cursor.Close(ctx)
-    for cursor.Next(ctx){
-        var post Posts
-        cursor.Decode(&post)
-        posts = append(posts, post)
-    }
-    if err := cursor.Err(); err != nil {
-        response.WriteHeader(http.StatusInternalServerError)
-        response.Write([]byte(`{"message": "` + err.Error() + `"}`))
-        return
-    }
-    json.NewEncoder(response).Encode(posts)
-
-}
 
 func main(){
 	fmt.Println("Starting the Application... ")

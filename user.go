@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+//Users Data Model
 type Users struct{
 	ID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Name string `json:"name,omitempty" bson:"name,omitempty"`
@@ -18,6 +19,7 @@ type Users struct{
 	Password  string  `json:"password,omitempty" bson:"password,omitempty"`
 }
 
+//Create User Function
 func CreateUserEndpoint(response http.ResponseWriter, request *http.Request){
 	response.Header().Add("content-type", "application/json")
 	var user Users
@@ -29,6 +31,7 @@ func CreateUserEndpoint(response http.ResponseWriter, request *http.Request){
 	result, _ := collection.InsertOne(ctx, user)
 	json.NewEncoder(response).Encode(result)
 }
+//Get User by id function
 func GetUserEndpoint(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("content-type", "application/json")
 	params := mux.Vars(request)
