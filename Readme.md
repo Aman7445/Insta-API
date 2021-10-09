@@ -59,7 +59,3 @@ Tested the API's on the Postman tool
 ### GET UserPost via UserID using POST
 
 <img width="700" src="./testing/userspost.jpg">
-
-###
-
-This repo is private right now.
