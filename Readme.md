@@ -26,10 +26,14 @@ if the terminal displays the below text it means the application is running on p
 
 ## API's created
 
-1)To Enter data in user collection at `http://localhost:8080/users`  
-2)To get user data out of user collection at `http://localhost:8080/users/{id}` replace id by the user's ID you want.  
+1)To Enter data in user collection at `http://localhost:8080/users`
+
+2)To get user data out of user collection at `http://localhost:8080/users/{id}` replace id by the user's ID you want.
+
 3)To Enter data in posts collection at `http://localhost:8080/posts`
+
 4)To get post data out of posts collection at `http://localhost:8080/posts/{id}` replace id by the user's ID you want.
+
 5)To get userspost data out of post collection at `http://localhost:8080/posts/users/{id}` replace id by the user's ID whose post you want to see.
 
 ## Screenshots
