@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+var lock sync.Mutex
 //Posts Data Model
 type Posts struct {
 	ID              primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
@@ -21,6 +23,8 @@ type Posts struct {
 
 //Create Posts FUNCTION
 func CreatePostEndpoint(response http.ResponseWriter, request *http.Request) {
+	lock.Lock()
+    defer lock.Unlock()
 	response.Header().Set("content-type", "application/json")
 	var post Posts
 	_ = json.NewDecoder(request.Body).Decode(&post)
@@ -29,10 +33,13 @@ func CreatePostEndpoint(response http.ResponseWriter, request *http.Request) {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	result, _ := collection.InsertOne(ctx, post)
 	json.NewEncoder(response).Encode(result)
+	time.Sleep(1 * time.Second)
 }
 
 //Get Posts by id Function 
 func GetPostEndpoint(response http.ResponseWriter, request *http.Request) {
+	lock.Lock()
+    defer lock.Unlock()
 	response.Header().Set("content-type", "application/json")
 	params := mux.Vars(request)
 	id, _ := primitive.ObjectIDFromHex(params["id"])
@@ -46,11 +53,14 @@ func GetPostEndpoint(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	json.NewEncoder(response).Encode(post)
+	time.Sleep(1 * time.Second)
 }
 
 //Get Each Users Posts Function
 
 func GetUserPostsEndpoint(response http.ResponseWriter, request *http.Request) {
+	lock.Lock()
+    defer lock.Unlock()
 	response.Header().Add("content-type", "application/json")
 	params := mux.Vars(request)
 	id, _ := params["id"]
@@ -75,4 +85,5 @@ func GetUserPostsEndpoint(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	json.NewEncoder(response).Encode(posts)
+	time.Sleep(1 * time.Second)
 }

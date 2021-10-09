@@ -12,6 +12,7 @@ import (
 )
 var client *mongo.Client
 
+
 func main(){
 	fmt.Println("Starting the Application... ")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
