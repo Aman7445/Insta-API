@@ -25,38 +25,14 @@ type Posts struct{
 	UserID string `json:"userid,omitempty" bson:"userid,omitempty"`
 	ImageURL string `json:"imageurl,omitempty" bson:"imageurl,omitempty"`
 	Caption  string `json:"caption,omitempty" bson:"caption,omitempty"`
-	PostTime time.Duration `json:"time,omitempty" bson:"time,omitempty"`
+	PostedTimeStamp time.Time `json:"postedtimestamp,omitempty" bson:"postedtimestamp,omitempty"`
 }
-// func CreateUserEndpoint(response http.ResponseWriter, request *http.Request){
-// 	response.Header().Add("content-type", "application/json")
-// 	var user Users
-// 	json.NewDecoder(request.Body).Decode(&user)
-// 	hash, _ := HashPassword(user.Password)
-// 	user.Password = hash
-// 	collection := client.Database("appointy").Collection("users")
-// 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-// 	result, _ := collection.InsertOne(ctx, user)
-// 	json.NewEncoder(response).Encode(result)
-// }
-// func GetUserEndpoint(response http.ResponseWriter, request *http.Request) {
-// 	response.Header().Set("content-type", "application/json")
-// 	params := mux.Vars(request)
-// 	id, _ := primitive.ObjectIDFromHex(params["id"])
-// 	var user Users
-// 	collection := client.Database("appointy").Collection("users")
-// 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-// 	err := collection.FindOne(ctx, Users{ID: id}).Decode(&user)
-// 	if err != nil {
-// 		response.WriteHeader(http.StatusInternalServerError)
-// 		response.Write([]byte(`{ "message": "` + err.Error() + `" }`))
-// 		return
-// 	}
-// 	json.NewEncoder(response).Encode(user)
-// }
+
 func CreatePostEndpoint(response http.ResponseWriter,request *http.Request){
 	response.Header().Set("content-type","application/json")
 	var post Posts
 	_=json.NewDecoder(request.Body).Decode(&post)
+	post.PostedTimeStamp= time.Now()
 	collection := client.Database("appointy").Collection("post")
 	ctx, _:= context.WithTimeout(context.Background(), 5*time.Second)
 	result, _:=collection.InsertOne(ctx,post);
@@ -105,16 +81,6 @@ func GetUserPostsEndpoint(response http.ResponseWriter, request *http.Request){
     json.NewEncoder(response).Encode(posts)
 
 }
-
-// func HashPassword(password string) (string, error) {
-// 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-//     return string(bytes), err
-// }
-
-// func CheckPasswordHash(password, hash string) bool {
-//     err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-//     return err == nil
-// }
 
 func main(){
 	fmt.Println("Starting the Application... ")
