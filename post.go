@@ -23,8 +23,6 @@ type Posts struct {
 
 //Create Posts FUNCTION
 func CreatePostEndpoint(response http.ResponseWriter, request *http.Request) {
-	lock.Lock()
-    defer lock.Unlock()
 	response.Header().Set("content-type", "application/json")
 	var post Posts
 	_ = json.NewDecoder(request.Body).Decode(&post)
@@ -33,7 +31,6 @@ func CreatePostEndpoint(response http.ResponseWriter, request *http.Request) {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	result, _ := collection.InsertOne(ctx, post)
 	json.NewEncoder(response).Encode(result)
-	time.Sleep(1 * time.Second)
 }
 
 //Get Posts by id Function 
